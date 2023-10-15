@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chat app</title>
+  <style>
+    /* Basic reset for styles */
+body, h1, p, ul, li {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+}
+
+#container{
+  max-width: 600px;
+  margin: auto ;
+}
+
+/* Chat messages styling */
+#messages {
+    list-style-type: none;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    height: 500px;
+    max-width: 600px;
+    padding: 8px;
+    margin-right: 10px;
+    overflow-x: hidden;
+}
+
+/* Individual message styling */
+#messages>li {
+    margin-bottom: 10px;
+    display: block;
+    width: 600px;
+    padding: 5px 10px;
+
+}
+
+/* Styling for the form */
+#form {
+    display: block;
+    align-items: center;
+    padding: 10px;
+}
+
+/* Styling for input fields */
+input[type="text"] {
+  display: block;
+  width: 560px;
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top:10px ;
+}
+#message{
+  height: 50px;
+}
+/* Styling for the submit button */
+#btn {
+    padding: 10px 20px;
+    margin-top: 10px;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    width: 575px;
+    
+}
+
+/* Hover effect for the submit button */
+#btn:hover {
+    background-color: #45a049;
+}
+#typing{
+  text-align: center;
+}
+
+  </style>
+</head>
+<body>
+  <div id="container">
+    <ul id="messages"></ul>
+    <form action="" id="form">
+      <input type="text" id="handle" placeholder="Your name">
+      <input type="text" name="" id="message" placeholder="message">
+      <button id="btn">submit</button>
+    </form>
+  
+    <p id="typing"></p>
+  </div>
+
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket=io();
+  const form=document.getElementById('form');
+  const handle=document.getElementById('handle');
+  const message=document.getElementById('message');
+  const messages=document.getElementById('messages')
+  const typing=document.getElementById('typing');
+
+  form.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    //sending handle and msg to the server
+    if(handle.value&&message.value){
+      socket.emit('chat',{
+  handle:handle.value,
+  message:message.value
+ })
+ message.value=''
+    }
+
+
+  })
+
+  //receiving data from backend
+  socket.on('chat',(data)=>{
+       const item=document.createElement('li');
+       item.innerHTML=`<strong>${data.handle}</strong><span>:${data.message}</span>`
+       messages.appendChild(item);
+       typing.innerText=''
+
+  })
+
+  message.addEventListener('keydown',()=>{
+    //sending user name to backend on keytype
+    socket.emit('user',{
+      handle:handle.value
+    })
+  })
+  //receiving broadcast name
+  socket.on('user',(data)=>{
+    if(data.handle){
+      typing.innerText=`${data.handle} is typing...`
+    }
+  })
+
+  </script>
+
+</body>
+</html>
